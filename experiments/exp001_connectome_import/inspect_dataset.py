@@ -35,3 +35,57 @@ for sheet in xls.sheet_names:
 
     print("\nConnection counts by type:")
     print(df["Type"].value_counts())
+
+    # ==========================
+    # NMJ INSPECTION
+    # ==========================
+
+    print("\n" + "=" * 50)
+    print("NMJ INSPECTION")
+    print("=" * 50)
+
+    nmj = df[df["Type"] == "NMJ"]
+
+    print("\nNumber of NMJ rows:")
+    print(len(nmj))
+
+    print("\nFirst 20 NMJ rows:")
+    print(nmj.head(20))
+
+    print("\nUnique NMJ source neurons:")
+    print(sorted(nmj["Neuron 1"].unique()))
+
+    print("\nUnique NMJ target muscles:")
+    print(sorted(nmj["Neuron 2"].unique()))
+
+    print("\nNumber of unique NMJ targets:")
+    print(len(nmj["Neuron 2"].unique()))
+
+    print("\nTop NMJ source neurons by connection count:")
+    print(nmj["Neuron 1"].value_counts().head(20))
+
+    print("\nTop NMJ target muscles by connection count:")
+    print(nmj["Neuron 2"].value_counts().head(20))
+
+    # ==========================
+    # SENSORY / MOTOR DISCOVERY
+    # ==========================
+
+    print("\n" + "=" * 50)
+    print("NEURON NAME INSPECTION")
+    print("=" * 50)
+
+    neurons = sorted(
+        set(df["Neuron 1"]).union(
+            set(df["Neuron 2"])
+        )
+    )
+
+    print("\nTotal neuron names:")
+    print(len(neurons))
+
+    print("\nFirst 100 neuron names:")
+    print(neurons[:100])
+
+    print("\nLast 100 neuron names:")
+    print(neurons[-100:])
