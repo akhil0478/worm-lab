@@ -6,9 +6,17 @@ sys.path.insert(0, str(project_root))
 from src.connectome.loader import load_connectome
 import networkx as nx
 
-G = load_connectome(
+connectome = load_connectome(
     "data/raw/connectome_dataset/NeuronConnect1.xls"
 )
+
+G = nx.DiGraph()
+
+for neuron in connectome.neurons:
+    G.add_node(neuron)
+
+for (src, dst), weight in connectome.chemical_connections.items():
+    G.add_edge(src, dst, weight=weight)
 
 print("Nodes:", G.number_of_nodes())
 print("Edges:", G.number_of_edges())
