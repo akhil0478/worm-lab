@@ -2,4 +2,5 @@ numpy
 networkx
 pandas
 matplotlib
+scikit-learn
 pytest
