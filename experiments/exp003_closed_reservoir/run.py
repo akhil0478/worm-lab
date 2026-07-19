@@ -38,6 +38,7 @@ C = normalize_spectral_radius(C)
 
 V = np.zeros(len(connectome.neuron_list))
 
+history = []
 
 # Example stimulation
 
@@ -80,8 +81,10 @@ for t in range(50):
         activity_index
     )
 
-    print(
-        activity_vector
-    )
+    history.append(activity_vector)
 
     print("-" * 40)
+
+history = np.array(history)
+print("history shape")
+print(history.shape)
