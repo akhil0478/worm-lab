@@ -6,6 +6,8 @@ import numpy as np
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 from src.connectome.loader import load_connectome
 from src.connectome.matrix import build_connectivity_matrix
 from src.connectome.metrics import normalize_spectral_radius
@@ -88,3 +90,21 @@ for t in range(50):
 history = np.array(history)
 print("history shape")
 print(history.shape)
+
+pca = PCA(n_components=2)
+
+trajectory = pca.fit_transform(history)
+
+plt.figure(figsize=(6,6))
+
+plt.plot(
+    trajectory[:,0],
+    trajectory[:,1],
+    marker="o"
+)
+
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("Reservoir trajectory")
+
+plt.show()
