@@ -4,14 +4,11 @@ from .reservoir import Reservoir
 
 
 def step(reservoir: Reservoir):
-    """
-    Perform one timestep of recurrent propagation.
+  
 
-    V(t+1) = C @ V(t)
-    """
 
-    reservoir.V = reservoir.C @ reservoir.V
+    reservoir.V = (reservoir.retention * reservoir.V + reservoir.W @ reservoir.S + reservoir.I)
+    reservoir.S = (reservoir.V>= reservoir.threshold).astype(float)
+    reservoir.V[reservoir.S == 1] = reservoir.reset
+    return reservoir.V
 
-    activity_index = np.sum(reservoir.V)
-
-    return activity_index, reservoir.V

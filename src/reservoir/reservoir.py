@@ -5,13 +5,16 @@ import numpy as np
 
 @dataclass
 class Reservoir:
-    """
-    Represents the current state of the recurrent neural reservoir.
-    """
+   
 
     C: np.ndarray
     V: np.ndarray
+    W: np.ndarray
+    I: np.ndarray
+    S: np.ndarray
 
-    @property
-    def size(self) -> int:
-        return self.C.shape[0]
+    threshold: float = 1
+    reset: float = 0.01
+    learning_rate: float = 0.001
+    retention: float = 0.97
+   
