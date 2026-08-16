@@ -12,6 +12,7 @@ class Reservoir:
     W: np.ndarray
     I: np.ndarray
     S: np.ndarray
+    v: np.ndarray
 
     threshold: float = 1
     reset: float = 0.01
