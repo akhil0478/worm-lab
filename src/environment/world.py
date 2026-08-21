@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
+WORLD_L = 100.0
+
 
 @dataclass
 class World:
-    width: float
-    height: float
     food: object
     obstacles: object
