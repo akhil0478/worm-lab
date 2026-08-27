@@ -15,7 +15,10 @@ def normalize_name(name):
 def load_connectome(filepath):
     df = pd.read_excel(filepath)
 
-    # Normalize neuron names
+    # ----------------------------------
+    # NORMALIZE NEURON NAMES
+    # ----------------------------------
+
     df["Neuron 1"] = df["Neuron 1"].apply(
         normalize_name
     )
@@ -40,10 +43,12 @@ def load_connectome(filepath):
     }
 
     # ----------------------------------
-    # OUTPUT NEURONS (NMJ SOURCES)
+    # OUTPUT NEURONS / NMJ CONNECTIONS
     # ----------------------------------
 
-    nmj_df = df[df["Type"] == "NMJ"]
+    nmj_df = df[
+        df["Type"].astype(str).str.upper() == "NMJ"
+    ]
 
     output_neurons = set(
         nmj_df["Neuron 1"]
@@ -54,6 +59,35 @@ def load_connectome(filepath):
             MOTOR_NEURONS
         )
     )
+
+    # Store only NMJ connections whose
+    # source is an identified motor neuron.
+    #
+    # If a motor neuron has multiple NMJ
+    # records, their weights are summed.
+    #
+    # Example:
+    # DVB -> NMJ = 1
+    # DVB -> NMJ = 4
+    #
+    # becomes:
+    # DVB -> NMJ = 5
+
+    nmj_connections = {}
+
+    for _, row in nmj_df.iterrows():
+
+        source = row["Neuron 1"]
+
+        if source not in motor_neurons:
+            continue
+
+        weight = int(row["Nbr"])
+
+        nmj_connections[source] = (
+            nmj_connections.get(source, 0)
+            + weight
+        )
 
     # ----------------------------------
     # INPUT NEURONS
@@ -99,7 +133,9 @@ def load_connectome(filepath):
 
     gap_junctions = {}
 
-    ej_df = df[df["Type"] == "EJ"]
+    ej_df = df[
+        df["Type"].astype(str).str.upper() == "EJ"
+    ]
 
     for _, row in ej_df.iterrows():
 
@@ -127,6 +163,7 @@ def load_connectome(filepath):
 
         chemical_connections=chemical_connections,
         gap_junctions=gap_junctions,
+        nmj_connections=nmj_connections,
 
         input_neurons=input_neurons,
         motor_neurons=motor_neurons,

@@ -10,7 +10,7 @@ class Connectome:
 
     chemical_connections: dict
     gap_junctions: dict
-
+    nmj_connections: dict
     input_neurons: set
     motor_neurons: set
     output_neurons: set
