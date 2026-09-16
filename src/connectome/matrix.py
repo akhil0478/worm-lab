@@ -3,12 +3,14 @@ import numpy as np
 from src.connectome.models import Connectome
 
 
-def build_connectivity_matrix(connectome: Connectome) -> np.ndarray:
+def build_connectivity_matrix(
+    connectome: Connectome
+) -> np.ndarray:
     """
     Convert a Connectome into an (n, n) connectivity matrix.
 
-    Chemical synapses (src → dst) contribute to
-    C[dst_idx, src_idx].
+    Chemical synapses (src → dst) contribute to:
+        C[dst_idx, src_idx]
 
     Gap junctions (A ↔ B) contribute symmetrically
     to C[i, j] and C[j, i].
@@ -21,19 +23,25 @@ def build_connectivity_matrix(connectome: Connectome) -> np.ndarray:
         dtype=np.float64
     )
 
+    # ----------------------------------
+    # CHEMICAL SYNAPSES
+    # ----------------------------------
+
     for (src, dst), weight in (
         connectome.chemical_connections.items()
     ):
-
         src_idx = connectome.neuron_to_idx[src]
         dst_idx = connectome.neuron_to_idx[dst]
 
         C[dst_idx, src_idx] += weight
 
+    # ----------------------------------
+    # GAP JUNCTIONS
+    # ----------------------------------
+
     for pair, weight in (
         connectome.gap_junctions.items()
     ):
-
         nodes = list(pair)
 
         if len(nodes) != 2:
@@ -88,7 +96,6 @@ def augment_with_nmj(
     for nmj_index, motor_neuron in enumerate(
         sorted(connectome.nmj_connections)
     ):
-
         motor_index = connectome.neuron_to_idx[
             motor_neuron
         ]

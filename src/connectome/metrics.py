@@ -13,19 +13,19 @@ import numpy as np
 DEFAULT_TARGET_SPECTRAL_RADIUS = 0.95
 
 
-def spectral_radius(C: np.ndarray) -> float:
+def spectral_radius(C_aug: np.ndarray) -> float:
     """
-    Return the spectral radius of C: max |λ_i| over eigenvalues λ_i.
+    Return the spectral radius of C_aug: max |λ_i| over eigenvalues λ_i.
 
-    Determines whether linear activity x(t+1) = C @ x(t) tends to
+    Determines whether linear activity x(t+1) = C_aug @ x(t) tends to
     grow, decay, or persist.
     """
-    eigenvalues = np.linalg.eigvals(C)
+    eigenvalues = np.linalg.eigvals(C_aug)
     return float(np.max(np.abs(eigenvalues)))
 
 
 def normalize_spectral_radius(
-    C: np.ndarray,
+    C_aug: np.ndarray,
     target: float = DEFAULT_TARGET_SPECTRAL_RADIUS,
 ) -> np.ndarray:
     """
@@ -39,9 +39,9 @@ def normalize_spectral_radius(
     The anatomical (unnormalized) matrix is not retained; regenerate
     it from Connectome via build_connectivity_matrix() if needed.
     """
-    rho = spectral_radius(C)
+    rho = spectral_radius(C_aug)
 
     if rho == 0.0:
-        return C.copy()
+        return C_aug.copy()
 
-    return C * (target / rho)
+    return C_aug * (target / rho)
