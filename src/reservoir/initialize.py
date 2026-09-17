@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.connectome.models import Connectome
+from src.connectome.neuron_types import MOTOR_NEURONS
 from src.reservoir.reservoir import Reservoir
 
 
@@ -22,7 +23,14 @@ def initialize_reservoir(
     """
 
     biological_count = len(connectome.neuron_list)
-    nmj_count = len(connectome.nmj_connections)
+    # Keep the size contract aligned with augment_with_nmj(): one simulated
+    # NMJ node is appended for every classified motor neuron present in the
+    # biological connectome, regardless of whether the source data has an
+    # NMJ record for it.
+    nmj_count = sum(
+        neuron in connectome.neuron_to_idx
+        for neuron in MOTOR_NEURONS
+    )
     expected_size = biological_count + nmj_count
 
     if C_aug.shape != (expected_size, expected_size):
