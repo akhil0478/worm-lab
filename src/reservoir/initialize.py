@@ -8,8 +8,8 @@ from src.reservoir.reservoir import Reservoir
 def initialize_reservoir(
     connectome: Connectome,
     C_aug: np.ndarray,
-    normal_threshold: float = 1.0,
-    nmj_threshold: float = 2.0,
+    normal_threshold: float = 0.20,
+    nmj_threshold: float = 0.9,
     retention: float = 0.97,
     reset: float = 0.01,
     learning_rate: float = 0.001,
