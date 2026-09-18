@@ -57,7 +57,7 @@ OUTPUT_DIR = (
     / "exp005_awcl_pulse_dynamics"
 )
 
-TIMESTEPS = 100
+TIMESTEPS = 1000
 TARGET_RADIUS = 0.95
 
 AWCL_NAME = "AWCL"
@@ -71,12 +71,8 @@ FIVE_PULSE_LENGTH = 5
 # The important new part of Experiment 005:
 # test several neuronal firing thresholds.
 THRESHOLDS = [
-    1.0,
-    0.5,
-    0.25,
-    0.1,
-    0.05,
-    0.01,
+    1.00, 0.75, 0.50, 0.35, 0.25, 0.20, 0.15,
+    0.125, 0.10, 0.075, 0.05, 0.025, 0.01,
 ]
 
 # Set this to True if you want every timestep printed.
@@ -88,6 +84,9 @@ PRINT_FIRING_DETAILS = True
 
 # Number of neuron names to print in diagnostic output.
 MAX_NEURONS_TO_PRINT = 25
+LATE_WINDOW = 200
+BURST_FRACTION = 0.25
+AUTOCORRELATION_MAX_LAG = 300
 
 
 # ============================================================
@@ -348,6 +347,59 @@ def print_firing_details(
     )
 
 
+
+
+def autocorrelation(signal):
+    signal = np.asarray(signal, dtype=float)
+    signal = signal - signal.mean()
+    if np.allclose(signal, 0):
+        return np.zeros_like(signal)
+    c = np.correlate(signal, signal, mode="full")[len(signal)-1:]
+    return c / (c[0] + 1e-12)
+
+def calculate_dynamical_analysis(result):
+    spikes = result["spike_history"]
+    pop = spikes.sum(axis=1).astype(float)
+    n = spikes.shape[1]
+    late = pop[-min(LATE_WINDOW, len(pop)):]
+    burst_mask = pop >= BURST_FRACTION*n
+    bursts=[]; start=None
+    for t,b in enumerate(burst_mask):
+        if b and start is None: start=t
+        elif not b and start is not None: bursts.append((start,t-1)); start=None
+    if start is not None: bursts.append((start,len(pop)-1))
+    durations=[b-a+1 for a,b in bursts]
+    intervals=[bursts[i][0]-bursts[i-1][0] for i in range(1,len(bursts))]
+    ac=autocorrelation(pop); m=min(AUTOCORRELATION_MAX_LAG,len(ac)-1)
+    if m>=2:
+        lags=np.arange(2,m+1); lag=int(lags[np.argmax(ac[lags])]); acv=float(ac[lag])
+    else: lag=-1; acv=0.0
+    recruited=np.count_nonzero(result["first_spike_timestep"]!=-1)/max(n,1)
+    late_active=float(np.mean(late>0)); late_high=float(np.mean(late>=BURST_FRACTION*n))
+    if recruited < .01: regime="isolated / subthreshold"
+    elif recruited < .05: regime="sparse propagation"
+    elif late_high > .5: regime="persistent high-activity"
+    elif late_active > .8: regime="persistent low-level activity"
+    elif recruited > .9: regime="near-global recruitment"
+    else: regime="transient distributed activity"
+    return {
+        "mean_population_activity":float(pop.mean()),
+        "late_mean_population_activity":float(late.mean()),
+        "peak_population_activity":int(pop.max()),
+        "mean_synchrony":float((pop/n).mean()),
+        "late_mean_synchrony":float((late/n).mean()),
+        "late_active_fraction":late_active,
+        "late_high_activity_fraction":late_high,
+        "burst_count":len(bursts),
+        "mean_burst_duration":float(np.mean(durations)) if durations else 0.0,
+        "max_burst_duration":max(durations) if durations else 0,
+        "mean_burst_interval":float(np.mean(intervals)) if intervals else 0.0,
+        "dominant_autocorrelation_lag":lag,
+        "dominant_autocorrelation":acv,
+        "recruitment_fraction":float(recruited),
+        "regime":regime,
+    }
+
 # ============================================================
 # SINGLE EXPERIMENT
 # ============================================================
@@ -528,6 +580,8 @@ def run_experiment(
         "awcl_index": awcl_index,
     }
 
+    result["dynamical_analysis"] = calculate_dynamical_analysis(result)
+
     # ========================================================
     # SAVE RAW DATA
     # ========================================================
@@ -676,6 +730,7 @@ def summarize_result(result):
             if downstream_fired
             else -1
         ),
+        **result.get("dynamical_analysis", {}),
     }
 
 
